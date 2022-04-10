@@ -1,4 +1,6 @@
-<?php session_start() ?>
+<?php session_start() 
+?>
+<?php session_destroy(); session_unset(); ?>
 <!DOCTYPE html>
 <html lang="en">
 

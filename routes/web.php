@@ -1,12 +1,16 @@
 <?php
+use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DatialsController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\CompaniesController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\jobsDashboardController;
+
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\userDashboard\UserDashboardController;
+use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,29 +23,38 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
+// Auth::routes();
 Route::get('/', function () {
     // session_start();
     return view('index');
 });
-Route::get('/showLogin', function () {
-    return view('login');
-});
-Route::get('/admin', function () {
-    return view('admin.layout.master');
-});
+// Route::get('/showLogin', function () {
+//     return view('login');
+// });
+// Route::get('/admin', function () {
+//     return view('admin.layout.master');
+// });
+Route::get('/adminUsers', [UsersController::class, 'showUsers'])->name('adminUsers');
+Route::post('/edit_admin_user', [UsersController::class, 'updateUser'])->name('edit_admin_user');
+Route::post('/add_admin_user', [AuthController::class, 'register'])->name('add_admin_user');
+Route::post('/delete_admin_user', [UsersController::class, 'deleteUser'])->name('delete_admin_user');
+Route::post('/active_admin_user', [UsersController::class, 'activeUser'])->name('active_admin_user');
+
+Route::get('/showLogin', [AuthController::class, 'showLogin'])->name('showLogin');
+Route::group([
+	'prefix' => LaravelLocalization::setLocale(),
+	'middleware' => [  '\Mcamara\LaravelLocalization\Middleware\LocaleSessionRedirect::class' ]
+],function(){
+    
 
 Route::get('/home', [IndexController::class, 'indexShow']);
 Route::get('/companies', [CompanyController::class, 'companyShow']);
 Route::get('/details', [DatialsController::class, 'detialsShow']);
 Route::post('/register', [LoginController::class, 'loginUser'])->name('register');
-Route::post('/login', [LoginController::class, 'login'])->name('login');
+
+
+
 // Abmin Dashboard
-Route::get('/adminUsers', [UsersController::class, 'showUsers'])->name('adminUsers');
-Route::post('/edit_admin_user', [UsersController::class, 'updateUser'])->name('edit_admin_user');
-Route::post('/add_admin_user', [UsersController::class, 'register'])->name('add_admin_user');
-Route::post('/delete_admin_user', [UsersController::class, 'deleteUser'])->name('delete_admin_user');
-Route::post('/active_admin_user', [UsersController::class, 'activeUser'])->name('active_admin_user');
 Route::get('/adminCompanies', [CompaniesController::class, 'showCompanies'])->name('adminCompanies');
 Route::post('/add_admin_company', [CompaniesController::class, 'insertCompany'])->name('add_admin_company');
 Route::post('/edit_admin_company', [CompaniesController::class, 'editCompanies'])->name('edit_admin_company');
@@ -72,4 +85,18 @@ Route::post('/delete_qualifcations_user', [UserDashboardController::class, 'dele
 Route::post('/add_Courses_user', [UserDashboardController::class, 'addCoursesUser'])->name('add_Courses_user');
 Route::post('/edit_courses_user', [UserDashboardController::class, 'editCoursesUser'])->name('edit_courses_user');
 Route::post('/delete_courses_user', [UserDashboardController::class, 'deleteCoursesUser'])->name('delete_courses_user');
+});
+
+Route::group(['middleware'=>'auth'],function(){
+	Route::group(['middleware'=>'role:admin|super_admin'],function(){
+        
+
+
+
+	});
+	
+	// Route::get('/logout',[AuthController::class,'logout'])->name('logout');
+});
+Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::get('/generate_roles',[SettingsController::class,'generateRoles'])->name('generate_roles');
 
